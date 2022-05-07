@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Resources:
+  LambdaFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Policies:
+        - PolicyName: LambdaFunctionPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - "arn:aws:logs:*:*:*"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+  LambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Role: !GetAtt LambdaFunctionRole.Arn
+      Runtime: "nodejs14.x"
+      Handler: index.handler
+      CodeUri: .
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "ArtifactBucket"
